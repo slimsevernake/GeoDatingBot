@@ -106,9 +106,11 @@ async def user_gender(m: types.Message, state: FSMContext):
 async def send_confirm_to_save(m: types.Message, state: FSMContext):
     data = await state.get_data()
     user_dict_data_keys = set(data['user'].keys())
-    if user_dict_data_keys ^ user_info_keys:
-        await m.delete()
-        await m.bot.send_message(chat_id=m.from_user.id, text='Введены не все данные')
+    difference = user_dict_data_keys ^ user_info_keys
+    if difference:
+        text = 'Введены не все данные' + \
+                '.'.join(difference)
+        await m.answer(text)
         return
 
     text = await user_dict_info_to_text(data['user'])
