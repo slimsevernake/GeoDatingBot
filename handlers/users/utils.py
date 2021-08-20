@@ -6,38 +6,37 @@ from keyboards.default.defaults import geo_keyboard
 
 async def get_user_age(data: dict) -> str:
     if data.get('age'):
-        text = f'Текущий возраст {data["age"]}.\nВведите новый'
+        text = f'Current age {data["age"]}.\nInput a new one'
     else:
-        text = 'Введите ваш возраст'
+        text = 'Input your age'
     return text
 
 
 async def get_user_gender(data: dict, key) -> str:
     if data.get(key):
         gender = await User.get_gender_display(data[key])
-        text = f'Текущий пол: <b>{gender}</b>.\nВыберите новый'
+        text = f'Current gender: <b>{gender}</b>.\nChoose a new one'
     else:
         if key == 'gender':
-            text = 'Выберите пол'
+            text = 'Choose gender'
         else:
-            text = 'Выберите интересующий пол'
+            text = 'Choose interested gender'
     return text
 
 
 async def get_user_photo(data: dict, m: Message):
     if data.get('photo'):
-        await m.delete()
         await m.bot.send_photo(photo=data['photo'], chat_id=m.from_user.id,
-                               caption='Текущее фото профиля')
+                               caption='Current profile photo')
     else:
-        await m.answer('Добавьте фото профиля')
+        await m.answer('Add profile photo')
 
 
 async def get_user_description(data: dict) -> str:
     if data.get('description'):
-        text = 'Текущее описание: \n' + data['description']
+        text = 'Current description: \n' + data['description']
     else:
-        text = 'Добавьте описание профиля'
+        text = 'Add profile description'
     return text
 
 
@@ -45,19 +44,19 @@ async def get_user_location(data: dict, m: Message):
     if data.get('longitude') and data.get('latitude'):
         longitude = data['longitude']
         latitude = data['latitude']
-        message = await m.answer('Текущее местоположение.\nВыберите новое',
+        message = await m.answer('Current location.\nChoose a new one',
                                  reply_markup=geo_keyboard)
         await m.bot.send_location(chat_id=m.from_user.id,
                                   longitude=longitude, latitude=latitude,
                                   reply_to_message_id=message.message_id)
     else:
-        await m.answer('Выберите локацию', reply_markup=geo_keyboard)
+        await m.answer('Share location', reply_markup=geo_keyboard)
 
 
 async def get_user_search_radius(data: dict) -> str:
     if data.get('search_distance'):
-        text = f'Текущий радиус: <b>{data["search_distance"]}</b>.\n' + \
-               'Введите новый радиус. В метрах'
+        text = f'Current radius: <b>{data["search_distance"]}</b>.\n' + \
+               'Input new radius. In metre'
     else:
-        text = 'Введите радиус поиска. В метрах'
+        text = 'Input radius. In metre'
     return text

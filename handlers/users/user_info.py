@@ -21,21 +21,19 @@ user_info_keys = {'user_id', 'username', 'description', 'gender', 'interested_ge
 async def user_dict_info_to_text(data: dict) -> str:
     gender = await User.get_gender_display(data['gender'])
     interested_gender = await User.get_gender_display(data['interested_gender'])
-    age_suffix = await User.get_age_suffix(data['age'])
-    text = f'Возраст: <b>{data["age"]}</b> {age_suffix}\n' + \
-           f'Пол: <b>{gender}</b>\n' + \
-           f'Интересующий пол: <b>{interested_gender}</b>\n' + \
-           f'Радиус поиска: <b>{data["search_distance"]}</b> м.\n\n' + \
+    text = f'Age: <b>{data["age"]}</b> years old\n' + \
+           f'Gender: <b>{gender}</b>\n' + \
+           f'Interested gender: <b>{interested_gender}</b>\n' + \
+           f'Search radius: <b>{data["search_distance"]}</b> м.\n\n' + \
            f'{data["description"]}'
     return text
 
 
-@dp.message_handler(Text(equals=['Вернуться']), state=UserInfoState)
+@dp.message_handler(Text(equals=['Back']), state=UserInfoState)
 async def back_button(m: types.Message, state: FSMContext):
     user = await User.get_or_none(user_id=m.from_user.id)
     if not user:
-        await m.delete()
-        await m.bot.send_message(chat_id=m.from_user.id, text='Сперва закончите регистрацию')
+        await m.answer('Finish the registration first')
         return
     data = await state.get_data()
     await state.finish()
@@ -43,7 +41,7 @@ async def back_button(m: types.Message, state: FSMContext):
     await state.update_data(**data)
 
 
-@dp.message_handler(Text(equals=['Возраст']), state=UserInfoState)
+@dp.message_handler(Text(equals=['Age']), state=UserInfoState)
 async def user_gender(m: types.Message, state: FSMContext):
     data = await state.get_data()
     text = await utils.get_user_age(data['user'])
@@ -52,7 +50,7 @@ async def user_gender(m: types.Message, state: FSMContext):
     await UserInfoState.age.set()
 
 
-@dp.message_handler(Text(equals=['Пол']), state=UserInfoState)
+@dp.message_handler(Text(equals=['Gender']), state=UserInfoState)
 async def user_gender(m: types.Message, state: FSMContext):
     data = await state.get_data()
     text = await utils.get_user_gender(data['user'], 'gender')
@@ -61,7 +59,7 @@ async def user_gender(m: types.Message, state: FSMContext):
     await UserInfoState.gender.set()
 
 
-@dp.message_handler(Text(equals=['Интересующий пол']), state=UserInfoState)
+@dp.message_handler(Text(equals=['Interested gender']), state=UserInfoState)
 async def user_gender(m: types.Message, state: FSMContext):
     data = await state.get_data()
     text = await utils.get_user_gender(data['user'], 'interested_gender')
@@ -70,7 +68,7 @@ async def user_gender(m: types.Message, state: FSMContext):
     await UserInfoState.interested_gender.set()
 
 
-@dp.message_handler(Text(equals=['Описание']), state=UserInfoState)
+@dp.message_handler(Text(equals=['Description']), state=UserInfoState)
 async def user_gender(m: types.Message, state: FSMContext):
     data = await state.get_data()
     text = await utils.get_user_description(data['user'])
@@ -79,14 +77,14 @@ async def user_gender(m: types.Message, state: FSMContext):
     await UserInfoState.description.set()
 
 
-@dp.message_handler(Text(equals=['Локация']), state=UserInfoState)
+@dp.message_handler(Text(equals=['Location']), state=UserInfoState)
 async def user_gender(m: types.Message, state: FSMContext):
     data = await state.get_data()
     await utils.get_user_location(data['user'], m)
     await UserInfoState.geolocation.set()
 
 
-@dp.message_handler(Text(equals=['Радиус поиска']), state=UserInfoState)
+@dp.message_handler(Text(equals=['Search radius']), state=UserInfoState)
 async def user_gender(m: types.Message, state: FSMContext):
     data = await state.get_data()
     text = await utils.get_user_search_radius(data['user'])
@@ -95,26 +93,26 @@ async def user_gender(m: types.Message, state: FSMContext):
     await UserInfoState.search_distance.set()
 
 
-@dp.message_handler(Text(equals=['Фото']), state=UserInfoState)
+@dp.message_handler(Text(equals=['Photo']), state=UserInfoState)
 async def user_gender(m: types.Message, state: FSMContext):
     data = await state.get_data()
     await utils.get_user_photo(data, m)
     await UserInfoState.photo.set()
 
 
-@dp.message_handler(Text(equals=['Сохранить']), state=UserInfoState)
+@dp.message_handler(Text(equals=['Save']), state=UserInfoState)
 async def send_confirm_to_save(m: types.Message, state: FSMContext):
     data = await state.get_data()
     user_dict_data_keys = set(data['user'].keys())
     difference = user_dict_data_keys ^ user_info_keys
     if difference:
-        text = 'Введены не все данные' + \
+        text = 'Some data were not passed' + \
                 '.'.join(difference)
         await m.answer(text)
         return
 
     text = await user_dict_info_to_text(data['user'])
-    text += '\n<b>Подтверждаете?</b>'
+    text += '\n<b>Confirm?</b>'
     await m.delete()
     await m.bot.send_location(chat_id=m.from_user.id,
                               latitude=data['user']['latitude'],
@@ -125,7 +123,7 @@ async def send_confirm_to_save(m: types.Message, state: FSMContext):
                            reply_markup=confirm_keyboard)
 
 
-@dp.message_handler(Text(equals=['Зарегестрироваться', 'Редактировать информацию']))
+@dp.message_handler(Text(equals=['Sign up', 'Edit info']))
 async def user_info_base_handler(m: types.Message, state: FSMContext):
     await UserInfoState.starter.set()
     user = await User.get_or_none(user_id=m.from_user.id)
@@ -144,12 +142,9 @@ async def user_info_base_handler(m: types.Message, state: FSMContext):
                 'photo': user.photo
             }
             data['creating'] = False
-        await m.answer('Выберите какие данные нужно изменить через меню', reply_markup=user_info_keyboard)
+        await m.answer('Use menu to choose data to change', reply_markup=user_info_keyboard)
     else:
-        text = 'Укажите свой возраст.\n Вам не может быть меньше 18.'
-        await m.answer(f"Привет, {m.from_user.full_name}!\n" +
-                       'Пожалуйста, пройдите форму регистрации.',
-                       reply_markup=user_info_keyboard)
+        text = 'Input you age.\nYou cant be youngest than 18.'
         async with state.proxy() as data:
             data['user'] = {
                 'user_id': m.from_user.id,
@@ -166,9 +161,9 @@ async def choose_user_age(m: types.Message, state: FSMContext):
     try:
         age = int(age)
         if age < 18:
-            await m.answer('Вам не может быть меньше 18')
+            await m.answer('You cant be youngest than 18')
         elif age >= 100:
-            await m.answer('Вам не может быть больше 100')
+            await m.answer('You cant be older than 100')
         else:
             async with state.proxy() as data:
                 data['user']['age'] = age
@@ -177,9 +172,9 @@ async def choose_user_age(m: types.Message, state: FSMContext):
                     await m.answer(text, reply_markup=gender_keyboard)
                     await UserInfoState.gender.set()
                 else:
-                    await m.answer('Сохранено')
+                    await m.answer('Saved')
     except ValueError:
-        await m.answer('Неправильный формат ввода')
+        await m.answer('Wrong format')
 
 
 @dp.callback_query_handler(item_cb.filter(action='choose_gender'), state=UserInfoState.gender)
@@ -188,7 +183,7 @@ async def choose_user_gender(call: types.CallbackQuery, callback_data: dict, sta
     async with state.proxy() as data:
         data['user']['gender'] = bool(int(value))  # callback returns data as a string
         #  Bool value like True will return like 'True' - as a string. So i store is as a integer
-        await call.answer('Сохранено')
+        await call.answer('Saved')
         if data.get('creating'):
             text = await utils.get_user_gender(data['user'], 'interested_gender')
             await call.message.answer(text, reply_markup=gender_keyboard)
@@ -200,7 +195,7 @@ async def choose_user_gender(call: types.CallbackQuery, callback_data: dict, sta
     value = callback_data.get('value')
     async with state.proxy() as data:
         data['user']['interested_gender'] = bool(int(value))
-        await call.answer('Сохранено')
+        await call.answer('Saved')
         if data.get('creating'):
             await utils.get_user_photo(data['user'], call.message)
             await UserInfoState.photo.set()
@@ -215,13 +210,13 @@ async def profile_photo(m: types.Message, state: FSMContext):
             await m.answer(text)
             await UserInfoState.description.set()
         else:
-            await m.answer('Сохранено')
+            await m.answer('Saved')
 
 
 @dp.message_handler(state=UserInfoState.description)
 async def add_profile_description(m: types.Message, state: FSMContext):
     if len(m.text) <= 30:
-        await m.answer('Описание слишком короткое')
+        await m.answer('Description is too short')
     else:
         async with state.proxy() as data:
             data['user']['description'] = m.text
@@ -229,7 +224,7 @@ async def add_profile_description(m: types.Message, state: FSMContext):
                 await utils.get_user_location(data['user'], m)
                 await UserInfoState.geolocation.set()
             else:
-                await m.answer('Сохранено')
+                await m.answer('Saved')
 
 
 @dp.message_handler(state=UserInfoState.geolocation, content_types=['location'])
@@ -242,7 +237,7 @@ async def profile_location(m: types.Message, state: FSMContext):
             await m.answer(text, reply_markup=user_info_keyboard)
             await UserInfoState.search_distance.set()
         else:
-            await m.answer('Сохранено')
+            await m.answer('Saved')
 
 
 @dp.message_handler(state=UserInfoState.search_distance)
@@ -250,18 +245,18 @@ async def search_distance(m: types.Message, state: FSMContext):
     try:
         radius = int(m.text)
         if radius < 30:
-            await m.answer('Радиус слишком маленький')
+            await m.answer('Radius is too small')
         elif radius >= 10000:
-            await m.answer('Радиус слишком большой')
+            await m.answer('Radius is too big')
         else:
             async with state.proxy() as data:
                 data['user']['search_distance'] = radius
             if data.get('creating'):
-                await m.answer('Все данные добавлены. Вы можете изменить их или сохранить')
+                await m.answer('All data has been updated. You can change them or save')
             else:
-                await m.answer('Сохранено')
+                await m.answer('Saved')
     except ValueError:
-        await m.answer('Неправильный формат ввода')
+        await m.answer('Wrong format')
 
 
 @dp.callback_query_handler(item_cb.filter(action='confirm'), state=UserInfoState)
@@ -280,20 +275,18 @@ async def save_user(call: types.CallbackQuery, callback_data: dict, state: FSMCo
                                                                'longitude': float(user_data['longitude']),
                                                                'latitude': float(user_data['latitude']),
                                                                'search_distance': user_data['search_distance'],
-                                                               'photo': user_data['photo'],
-                                                               'age_suffix': await User.get_age_suffix(user_data['age'])})
+                                                               'photo': user_data['photo']})
             if created:
-                text = 'Добро пожаловать'
+                text = 'Welcome!'
             else:
                 for key, value in user_data.items():
                     setattr(user, key, value)
                 try:
-                    user.age_suffix = await User.get_age_suffix(user.age)
                     await user.save()
                 except Exception as e:
                     await call.message.answer(str(e))
                 else:
-                    text = 'Данные изменены'
+                    text = 'Data has been changed'
             keyboard, prev_level = await dispatcher('LEVEL_1')
             await call.message.answer(text, reply_markup=keyboard)
             data.pop('user')
@@ -301,4 +294,4 @@ async def save_user(call: types.CallbackQuery, callback_data: dict, state: FSMCo
             data['prev_level'] = prev_level
             await state.finish()
     else:
-        await call.answer('Вы можете выбрать нужный этап через меню', show_alert=True)
+        await call.answer('You can choose stage using menu', show_alert=True)

@@ -20,7 +20,7 @@ async def back(message: types.Message, state: FSMContext):
 
 @dp.message_handler(CommandStart(), state='*')
 async def bot_start(m: types.Message, state: FSMContext):
-    await m.answer(f"Привет, {m.from_user.full_name}!\n" +
-                   'Пожалуйста, пройдите форму регистрации.',
+    await m.answer(f"Hello, {m.from_user.full_name}!\n" +
+                   'Please, sign up first.',
                    reply_markup=do_registration)
     await state.finish()

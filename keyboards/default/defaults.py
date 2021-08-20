@@ -2,25 +2,25 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 
 geo_keyboard = ReplyKeyboardMarkup(resize_keyboard=True).add(
-    KeyboardButton('Отправить геолокацию', request_location=True)
+    KeyboardButton('Share location', request_location=True)
 )
 
 
 user_info_keyboard = ReplyKeyboardMarkup(resize_keyboard=True).add(
-    KeyboardButton('Пол'), KeyboardButton('Возраст')
+    KeyboardButton('Gender'), KeyboardButton('Age')
 ).add(
-    KeyboardButton('Интересующий пол'), KeyboardButton('Описание')
+    KeyboardButton('Interested gender'), KeyboardButton('Description')
 ).add(
-    KeyboardButton('Локация'), KeyboardButton('Радиус поиска')
+    KeyboardButton('Location'), KeyboardButton('Search radius')
 ).add(
-    KeyboardButton('Фото')
+    KeyboardButton('Photo')
 ).add(
-    KeyboardButton('Сохранить')
+    KeyboardButton('Save')
 ).add(
-    KeyboardButton('Вернуться')
+    KeyboardButton('Back')
 )
 
 
 do_registration = ReplyKeyboardMarkup(resize_keyboard=True).add(
-    KeyboardButton('Зарегестрироваться')
+    KeyboardButton('Sign up')
 )

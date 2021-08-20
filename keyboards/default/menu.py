@@ -2,7 +2,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 
 level_1 = ReplyKeyboardMarkup(resize_keyboard=True).add(
-    KeyboardButton('Смотреть пользователей')
+    KeyboardButton('Display users')
 ).add(
-    KeyboardButton('Редактировать информацию')
+    KeyboardButton('Edit info')
 )
