@@ -112,6 +112,7 @@ async def send_confirm_to_save(m: types.Message, state: FSMContext):
         text = 'Some data were not passed' + \
                 '.'.join(difference)
         await m.answer(text)
+        log.info(f'Difference: {difference}')
         return
 
     text = await user_dict_info_to_text(data['user'])
@@ -165,8 +166,10 @@ async def choose_user_age(m: types.Message, state: FSMContext):
     try:
         age = int(age)
         if age < 18:
+            log.info(f'Tried to pass age {age}')
             await m.answer('You cant be youngest than 18')
         elif age >= 100:
+            log.info(f'Tried to pass age {age}')
             await m.answer('You cant be older than 100')
         else:
             async with state.proxy() as data:

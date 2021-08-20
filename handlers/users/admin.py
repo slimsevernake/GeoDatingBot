@@ -3,7 +3,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.builtin import Text
 
-from loader import dp
+from loader import dp, log
 
 from keyboards.dispatcher import dispatcher
 
@@ -15,6 +15,7 @@ from handlers.users.utils import send_message
 
 @dp.message_handler(commands=['admin'], is_admin=True)
 async def admin_panel(m: types.Message, state: FSMContext):
+    log.info(f'User {m.from_user.id} has access to admin panel')
     keyboard, prev_level = await dispatcher('LEVEL_2_ADMIN')
     await m.answer('Admin panel', reply_markup=keyboard)
     await state.update_data(prev_level=prev_level)
