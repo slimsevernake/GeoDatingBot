@@ -1,7 +1,7 @@
 from aiogram import executor
 
 from loader import dp, db, TORTOISE_ORM
-import middlewares, handlers
+import middlewares, filters, handlers
 from utils.set_bot_commands import set_default_commands
 
 from filters.admin import IsAdmin
