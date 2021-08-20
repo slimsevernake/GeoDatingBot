@@ -6,7 +6,10 @@ from keyboards.default import menu
 
 #  We cant store levels in 'flat' dict. Because in this case it would much harder to implement SINGLE 'Back' button
 menu_storage = {
-    'LEVEL_1': menu.level_1
+    'LEVEL_1': menu.level_1,
+    'LEVEL_1:LEVEL_2': {
+        'LEVEL_2_ADMIN': menu.level_2_admin
+    }
 }
 
 
