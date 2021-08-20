@@ -11,6 +11,11 @@ class User(Model):
     longitude = fields.FloatField()
     latitude = fields.FloatField()
     search_distance = fields.IntField()
+    photo = fields.CharField(max_length=255)
+
+    @staticmethod
+    def get_gender_display(gender_bool: bool) -> str:
+        return 'Мужчина' if gender_bool else 'Женщина'
 
 
 class UserProfile(Model):
