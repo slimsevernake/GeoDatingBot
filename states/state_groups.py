@@ -11,3 +11,7 @@ class UserInfoState(StatesGroup):
     geolocation = State()
     search_distance = State()
     save = State()
+
+
+class Mailing(StatesGroup):
+    text = State()

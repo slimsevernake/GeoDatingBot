@@ -1,6 +1,7 @@
 from db.models import User
 
 from aiogram.types import Message
+from aiogram.utils import exceptions
 from keyboards.default.defaults import geo_keyboard
 
 
@@ -60,3 +61,25 @@ async def get_user_search_radius(data: dict) -> str:
     else:
         text = 'Input radius. In metre'
     return text
+
+
+async def send_message(user_id: int, text: str, bot) -> bool:
+    try:
+        await bot.send_message(user_id, text)
+    except exceptions.BotBlocked:
+        log.error(f"Target [ID:{user_id}]: blocked by user")
+    except exceptions.ChatNotFound:
+        log.error(f"Target [ID:{user_id}]: invalid user ID")
+    except exceptions.RetryAfter as e:
+        log.error(f"Target [ID:{user_id}]: Flood limit is exceeded. Sleep {e.timeout} seconds.")
+        await asyncio.sleep(e.timeout)
+        return await send_message(user_id, text, bot)
+    except exceptions.UserDeactivated:
+        log.error(f"Target [ID:{user_id}]: user is deactivated")
+    except exceptions.TelegramAPIError:
+        log.error(f"Target [ID:{user_id}]: failed")
+    else:
+        log.info(f"Target [ID:{user_id}]: success")
+        return True
+    return False
+
