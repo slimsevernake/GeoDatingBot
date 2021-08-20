@@ -4,12 +4,15 @@ from loader import dp, db, TORTOISE_ORM
 import middlewares, handlers
 from utils.set_bot_commands import set_default_commands
 
+from filters.admin import IsAdmin
+
 
 async def on_startup(dispatcher):
     # Устанавливаем дефолтные команды
     await set_default_commands(dispatcher)
     await db.init(config=TORTOISE_ORM)
     await db.generate_schemas()
+    dp.filters_factory.bind(IsAdmin)
 
 
 async def on_shutdown(dispatcher):
