@@ -13,7 +13,7 @@ async def on_startup(dispatcher):
 
 
 async def on_shutdown(dispatcher):
-    db.close_connections()
+    await db.close_connections()
 
 
 if __name__ == '__main__':
