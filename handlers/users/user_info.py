@@ -98,7 +98,7 @@ async def user_gender(m: types.Message, state: FSMContext):
 async def user_gender(m: types.Message, state: FSMContext):
     data = await state.get_data()
     await utils.get_user_photo(data, m)
-    await UserInfoState.interested_gender.set()
+    await UserInfoState.photo.set()
 
 
 @dp.message_handler(Text(equals=['Сохранить']), state=UserInfoState)
@@ -151,6 +151,7 @@ async def user_info_base_handler(m: types.Message, state: FSMContext):
                 'user_id': m.from_user.id,
                 'username': m.from_user.full_name
             }
+            data['creating'] = True
         await m.answer(text)
         await UserInfoState.age.set()
 
@@ -167,9 +168,12 @@ async def choose_user_age(m: types.Message, state: FSMContext):
         else:
             async with state.proxy() as data:
                 data['user']['age'] = age
-                text = await utils.get_user_gender(data['user'], 'gender')
-            await m.answer(text, reply_markup=gender_keyboard)
-            await UserInfoState.gender.set()
+                if data.get('creating'):
+                    text = await utils.get_user_gender(data['user'], 'gender')
+                    await m.answer(text, reply_markup=gender_keyboard)
+                    await UserInfoState.gender.set()
+                else:
+                    await m.answer('Сохранено')
     except ValueError:
         await m.answer('Неправильный формат ввода')
 
@@ -180,10 +184,11 @@ async def choose_user_gender(call: types.CallbackQuery, callback_data: dict, sta
     async with state.proxy() as data:
         data['user']['gender'] = bool(int(value))  # callback returns data as a string
         #  Bool value like True will return like 'True' - as a string. So i store is as a integer
-        text = await utils.get_user_gender(data['user'], 'interested_gender')
-    await call.answer('Сохранено')
-    await call.message.answer(text, reply_markup=gender_keyboard)
-    await UserInfoState.interested_gender.set()
+        await call.answer('Сохранено')
+        if data.get('creating'):
+            text = await utils.get_user_gender(data['user'], 'interested_gender')
+            await call.message.answer(text, reply_markup=gender_keyboard)
+            await UserInfoState.interested_gender.set()
 
 
 @dp.callback_query_handler(item_cb.filter(action='choose_gender'), state=UserInfoState.interested_gender)
@@ -192,19 +197,21 @@ async def choose_user_gender(call: types.CallbackQuery, callback_data: dict, sta
     async with state.proxy() as data:
         data['user']['interested_gender'] = bool(int(value))
         await call.answer('Сохранено')
-        await utils.get_user_photo(data['user'], call.message)
-    await UserInfoState.photo.set()
+        if data.get('creating'):
+            await utils.get_user_photo(data['user'], call.message)
+            await UserInfoState.photo.set()
 
 
 @dp.message_handler(state=UserInfoState.photo, content_types=types.ContentType.PHOTO)
 async def profile_photo(m: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['user']['photo'] = m.photo[-1].file_id
-        text = await utils.get_user_description(data['user'])
-        await m.delete()
-        await m.bot.send_message(chat_id=m.from_user.id,
-                                 text=text)
-    await UserInfoState.description.set()
+        if data.get('creating'):
+            text = await utils.get_user_description(data['user'])
+            await m.answer(text)
+            await UserInfoState.description.set()
+        else:
+            await m.answer('Сохранено')
 
 
 @dp.message_handler(state=UserInfoState.description)
@@ -214,8 +221,11 @@ async def add_profile_description(m: types.Message, state: FSMContext):
     else:
         async with state.proxy() as data:
             data['user']['description'] = m.text
-            await utils.get_user_location(data['user'], m)
-        await UserInfoState.geolocation.set()
+            if data.get('creating'):
+                await utils.get_user_location(data['user'], m)
+                await UserInfoState.geolocation.set()
+            else:
+                await m.answer('Сохранено')
 
 
 @dp.message_handler(state=UserInfoState.geolocation, content_types=['location'])
@@ -223,9 +233,12 @@ async def profile_location(m: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['user']['longitude'] = m.location.longitude
         data['user']['latitude'] = m.location.latitude
-        text = await utils.get_user_search_radius(data['user'])
-    await m.answer(text, reply_markup=user_info_keyboard)
-    await UserInfoState.search_distance.set()
+        if data.get('creating'):
+            text = await utils.get_user_search_radius(data['user'])
+            await m.answer(text, reply_markup=user_info_keyboard)
+            await UserInfoState.search_distance.set()
+        else:
+            await m.answer('Сохранено')
 
 
 @dp.message_handler(state=UserInfoState.search_distance)
@@ -239,7 +252,10 @@ async def search_distance(m: types.Message, state: FSMContext):
         else:
             async with state.proxy() as data:
                 data['user']['search_distance'] = radius
-            await m.answer('Все данные добавлены. Вы можете изменить их или сохранить')
+            if data.get('creating'):
+                await m.answer('Все данные добавлены. Вы можете изменить их или сохранить')
+            else:
+                await m.answer('Сохранено')
     except ValueError:
         await m.answer('Неправильный формат ввода')
 

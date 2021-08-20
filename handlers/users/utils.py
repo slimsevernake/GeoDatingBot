@@ -30,7 +30,7 @@ async def get_user_photo(data: dict, m: Message):
         await m.bot.send_photo(photo=data['photo'], chat_id=m.from_user.id,
                                caption='Текущее фото профиля')
     else:
-        await m.edit_text('Добавьте фото профиля')
+        await m.answer('Добавьте фото профиля')
 
 
 async def get_user_description(data: dict) -> str:
