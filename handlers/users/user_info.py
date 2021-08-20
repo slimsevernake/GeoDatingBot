@@ -25,7 +25,7 @@ async def user_dict_info_to_text(data: dict) -> str:
     text = f'Возраст: <b>{data["age"]}</b> {age_suffix}\n' + \
            f'Пол: <b>{gender}</b>\n' + \
            f'Интересующий пол: <b>{interested_gender}</b>\n' + \
-           f'Радиус поиска: <b>{data["search_distance"]}</b>\n\n' + \
+           f'Радиус поиска: <b>{data["search_distance"]}</b> м.\n\n' + \
            f'{data["description"]}'
     return text
 
@@ -125,7 +125,7 @@ async def send_confirm_to_save(m: types.Message, state: FSMContext):
                            reply_markup=confirm_keyboard)
 
 
-@dp.message_handler(Text(equals=['Зарегестрироваться', 'Изменить данные']))
+@dp.message_handler(Text(equals=['Зарегестрироваться', 'Редактировать информацию']))
 async def user_info_base_handler(m: types.Message, state: FSMContext):
     await UserInfoState.starter.set()
     user = await User.get_or_none(user_id=m.from_user.id)
@@ -143,6 +143,7 @@ async def user_info_base_handler(m: types.Message, state: FSMContext):
                 'search_distance': user.search_distance,
                 'photo': user.photo
             }
+            data['creating'] = False
         await m.answer('Выберите какие данные нужно изменить через меню', reply_markup=user_info_keyboard)
     else:
         text = 'Укажите свой возраст.\n Вам не может быть меньше 18.'
@@ -296,6 +297,7 @@ async def save_user(call: types.CallbackQuery, callback_data: dict, state: FSMCo
             keyboard, prev_level = await dispatcher('LEVEL_1')
             await call.message.answer(text, reply_markup=keyboard)
             data.pop('user')
+            data.pop('creating')
             data['prev_level'] = prev_level
             await state.finish()
     else:

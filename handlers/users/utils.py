@@ -57,7 +57,7 @@ async def get_user_location(data: dict, m: Message):
 async def get_user_search_radius(data: dict) -> str:
     if data.get('search_distance'):
         text = f'Текущий радиус: <b>{data["search_distance"]}</b>.\n' + \
-               'Введите новый'
+               'Введите новый радиус. В метрах'
     else:
-        text = 'Введите радиус поиска'
+        text = 'Введите радиус поиска. В метрах'
     return text
