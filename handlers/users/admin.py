@@ -10,7 +10,11 @@ from keyboards.dispatcher import dispatcher
 from states.state_groups import Mailing
 
 from db.models import User
+from db.statistic import Statistic
 from handlers.users.utils import send_message
+
+
+stat: Statistic = Statistic()
 
 
 @dp.message_handler(commands=['admin'], is_admin=True)
@@ -40,3 +44,14 @@ async def broadcast(m: types.Message, state: FSMContext):
     state_data = await state.get_data()
     await state.finish()
     await state.update_data(**state_data)
+
+
+@dp.message_handler(Text(equals=['Statistic']), is_admin=True)
+async def statistic_menu(m: types.Message):
+    statistic_data = await stat.report()
+    log.info(f'User {m.from_user.id} requests statistic')
+    log.info(statistic_data)
+    text = ''
+    for key, value in statistic_data.items():
+        text += f'<b>{key}</b>: {value or 0}\n'
+    await m.answer(text)
