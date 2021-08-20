@@ -3,7 +3,7 @@ from aiogram.dispatcher.filters.builtin import CommandStart
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.builtin import Text
 
-from loader import dp
+from loader import dp, log
 
 from keyboards.default.defaults import do_registration
 from keyboards.dispatcher import dispatcher
@@ -23,4 +23,5 @@ async def bot_start(m: types.Message, state: FSMContext):
     await m.answer(f"Hello, {m.from_user.full_name}!\n" +
                    'Please, sign up first.',
                    reply_markup=do_registration)
+    log.info(f'User: {m.from_user.id} comes')
     await state.finish()

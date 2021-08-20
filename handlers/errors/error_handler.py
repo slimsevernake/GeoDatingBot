@@ -1,11 +1,10 @@
-import logging
 from aiogram.utils.exceptions import (Unauthorized, InvalidQueryID, TelegramAPIError,
                                       CantDemoteChatCreator, MessageNotModified, MessageToDeleteNotFound,
                                       MessageTextIsEmpty, RetryAfter,
                                       CantParseEntities, MessageCantBeDeleted)
 
 
-from loader import dp
+from loader import dp, log
 
 
 @dp.errors_handler()
@@ -19,40 +18,40 @@ async def errors_handler(update, exception):
     """
 
     if isinstance(exception, CantDemoteChatCreator):
-        logging.exception("Can't demote chat creator")
+        log.exception("Can't demote chat creator")
         return True
 
     if isinstance(exception, MessageNotModified):
-        logging.exception('Message is not modified')
+        log.exception('Message is not modified')
         return True
     if isinstance(exception, MessageCantBeDeleted):
-        logging.exception('Message cant be deleted')
+        log.exception('Message cant be deleted')
         return True
 
     if isinstance(exception, MessageToDeleteNotFound):
-        logging.exception('Message to delete not found')
+        log.exception('Message to delete not found')
         return True
 
     if isinstance(exception, MessageTextIsEmpty):
-        logging.exception('MessageTextIsEmpty')
+        log.exception('MessageTextIsEmpty')
         return True
 
     if isinstance(exception, Unauthorized):
-        logging.exception(f'Unauthorized: {exception}')
+        log.exception(f'Unauthorized: {exception}')
         return True
 
     if isinstance(exception, InvalidQueryID):
-        logging.exception(f'InvalidQueryID: {exception} \nUpdate: {update}')
+        log.exception(f'InvalidQueryID: {exception} \nUpdate: {update}')
         return True
 
     if isinstance(exception, TelegramAPIError):
-        logging.exception(f'TelegramAPIError: {exception} \nUpdate: {update}')
+        log.exception(f'TelegramAPIError: {exception} \nUpdate: {update}')
         return True
     if isinstance(exception, RetryAfter):
-        logging.exception(f'RetryAfter: {exception} \nUpdate: {update}')
+        log.exception(f'RetryAfter: {exception} \nUpdate: {update}')
         return True
     if isinstance(exception, CantParseEntities):
-        logging.exception(f'CantParseEntities: {exception} \nUpdate: {update}')
+        log.exception(f'CantParseEntities: {exception} \nUpdate: {update}')
         return True
     
-    logging.exception(f'Update: {update} \n{exception}')
+    log.exception(f'Update: {update} \n{exception}')

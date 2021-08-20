@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.dispatcher.filters.builtin import Text
 from aiogram.dispatcher import FSMContext
 
-from loader import dp
+from loader import dp, log
 from states.state_groups import UserInfoState
 
 from keyboards.default.defaults import user_info_keyboard
@@ -131,6 +131,7 @@ async def user_info_base_handler(m: types.Message, state: FSMContext):
     await UserInfoState.starter.set()
     user = await User.get_or_none(user_id=m.from_user.id)
     if user:
+        log.info(f'User {m.from_user.id} edit info')
         async with state.proxy() as data:
             data['user'] = {
                 'user_id': user.user_id,

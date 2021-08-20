@@ -1,8 +1,10 @@
+import asyncio
 from db.models import User
 
 from aiogram.types import Message
 from aiogram.utils import exceptions
 from keyboards.default.defaults import geo_keyboard
+from loader import log
 
 
 async def get_user_age(data: dict) -> str:
@@ -82,4 +84,3 @@ async def send_message(user_id: int, text: str, bot) -> bool:
         log.info(f"Target [ID:{user_id}]: success")
         return True
     return False
-
