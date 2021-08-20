@@ -8,6 +8,7 @@ from states.state_groups import UserInfoState
 from keyboards.default.defaults import user_info_keyboard
 from keyboards.inline.user_info_keyboard import gender_keyboard, confirm_keyboard
 from keyboards.callbacks import item_cb
+from keyboards.dispatcher import dispatcher
 
 from db.models import User
 from handlers.users import utils
@@ -279,7 +280,7 @@ async def save_user(call: types.CallbackQuery, callback_data: dict, state: FSMCo
                                                                'photo': user_data['photo'],
                                                                'age_suffix': await User.get_age_suffix(user_data['age'])})
             if created:
-                await call.message.answer('Добро пожаловать')
+                text = 'Добро пожаловать'
             else:
                 for key, value in user_data.items():
                     setattr(user, key, value)
@@ -289,8 +290,11 @@ async def save_user(call: types.CallbackQuery, callback_data: dict, state: FSMCo
                 except Exception as e:
                     await call.message.answer(str(e))
                 else:
-                    await call.message.answer('Данные изменены')
+                    text = 'Данные изменены'
+            keyboard, prev_level = await dispatcher('LEVEL_1')
+            await call.message.answer(text, reply_markup=keyboard)
             data.pop('user')
+            data['prev_level'] = prev_level
             await state.finish()
     else:
         await call.answer('Вы можете выбрать нужный этап через меню', show_alert=True)
