@@ -37,8 +37,11 @@ async def back_button(m: types.Message, state: FSMContext):
         return
     data = await state.get_data()
     await state.finish()
+    keyboard, prev_level = await dispatcher('LEVEL_1')
     data.pop('user')
+    data['prev_level'] = prev_level
     await state.update_data(**data)
+    await m.answer('Returning...', reply_markup=keyboard)
 
 
 @dp.message_handler(Text(equals=['Age']), state=UserInfoState)
