@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.builtin import Text
 from loader import dp, log
 
-from keyboards.inline.user_info_keyboard import confirm_keyboard, item_cb, get_user_profile_keyboard
+from keyboards.inline.user_info_keyboard import confirm_keyboard, item_cb, get_user_profile_keyboard, like_dislike_cb
 from keyboards.dispatcher import dispatcher
 
 from db.models import User
@@ -64,3 +64,32 @@ async def get_profiles_page(call: types.CallbackQuery, callback_data: dict, stat
         await call.bot.send_photo(photo=photo_id, caption=user_info, reply_markup=keyboard,
                                   chat_id=call.from_user.id)
         await call.answer()
+
+
+@dp.callback_query_handler(like_dislike_cb.filter(action='like_dislike'), state=ListProfiles.main)
+async def like_dislike(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    user_id = callback_data['user_id']
+    action_type = bool(int(callback_data['type']))
+    index = int(callback_data['index'])
+    me = await User.get(user_id=call.from_user.id)
+    user = await User.get(user_id=user_id)
+
+    async with state.proxy() as data:
+        users_list = data['users_list']
+        if action_type:
+            await user.likers.add(me)
+            user.likes += 1
+            await user.save()
+            await call.answer('Liked')
+            index = index + 1 if index < len(users_list)-1 else index - 1
+        else:
+            await user.dislikers.add(me)
+            user.dislikes += 1
+            await user.save()
+            await call.answer('Disliked')
+            data['users_list'].pop(index)
+            index = index + 1 if index < len(users_list)-1 else index - 1
+        user_info, photo_id, keyboard = await get_user_info(users_list[index], index)
+        await call.message.delete()
+        await call.bot.send_photo(photo=photo_id, caption=user_info, reply_markup=keyboard,
+                                  chat_id=call.from_user.id)
