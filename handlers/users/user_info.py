@@ -181,7 +181,7 @@ async def choose_user_age(m: types.Message, state: FSMContext):
                     await m.answer(text, reply_markup=gender_keyboard)
                     await UserInfoState.gender.set()
                 else:
-                    await m.answer('Saved')
+                    await m.answer('Success')
     except ValueError:
         await m.answer('Wrong format')
 
@@ -192,7 +192,7 @@ async def choose_user_gender(call: types.CallbackQuery, callback_data: dict, sta
     async with state.proxy() as data:
         data['user']['gender'] = bool(int(value))  # callback returns data as a string
         #  Bool value like True will return like 'True' - as a string. So i store is as a integer
-        await call.answer('Saved')
+        await call.answer('Success')
         if data.get('creating'):
             text = await utils.get_user_gender(data['user'], 'interested_gender')
             await call.message.answer(text, reply_markup=gender_keyboard)
@@ -204,7 +204,7 @@ async def choose_user_gender(call: types.CallbackQuery, callback_data: dict, sta
     value = callback_data.get('value')
     async with state.proxy() as data:
         data['user']['interested_gender'] = bool(int(value))
-        await call.answer('Saved')
+        await call.answer('Success')
         if data.get('creating'):
             await utils.get_user_photo(data['user'], call.message)
             await UserInfoState.photo.set()
@@ -219,7 +219,7 @@ async def profile_photo(m: types.Message, state: FSMContext):
             await m.answer(text)
             await UserInfoState.description.set()
         else:
-            await m.answer('Saved')
+            await m.answer('Success')
 
 
 @dp.message_handler(state=UserInfoState.description)
@@ -233,7 +233,7 @@ async def add_profile_description(m: types.Message, state: FSMContext):
                 await utils.get_user_location(data['user'], m)
                 await UserInfoState.geolocation.set()
             else:
-                await m.answer('Saved')
+                await m.answer('Success')
 
 
 @dp.message_handler(state=UserInfoState.geolocation, content_types=['location'])
@@ -246,7 +246,7 @@ async def profile_location(m: types.Message, state: FSMContext):
             await m.answer(text, reply_markup=user_info_keyboard)
             await UserInfoState.search_distance.set()
         else:
-            await m.answer('Saved')
+            await m.answer('Success')
 
 
 @dp.message_handler(state=UserInfoState.search_distance)
@@ -263,7 +263,7 @@ async def search_distance(m: types.Message, state: FSMContext):
             if data.get('creating'):
                 await m.answer('All data has been updated. You can change them or save')
             else:
-                await m.answer('Saved')
+                await m.answer('Success')
     except ValueError:
         await m.answer('Wrong format')
 
