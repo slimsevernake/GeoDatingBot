@@ -13,14 +13,10 @@ class User(Model):
     search_distance = fields.IntField()
     photo = fields.CharField(max_length=255)
 
-    @staticmethod
-    async def get_gender_display(gender_bool: bool) -> str:
-        return 'Man' if gender_bool else 'Woman'
-
-
-class UserProfile(Model):
-    user: fields.OneToOneRelation[User] = fields.OneToOneField('models.User', on_delete=fields.CASCADE,
-                                                               related_name='profile')
     likes = fields.IntField(default=0)
     dislikes = fields.IntField(default=0)
     matched = fields.IntField(default=0)
+
+    @staticmethod
+    async def get_gender_display(gender_bool: bool) -> str:
+        return 'Man' if gender_bool else 'Woman'
