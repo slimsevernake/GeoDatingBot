@@ -88,7 +88,7 @@ async def send_message(user_id: int, text: str, bot) -> bool:
 
 async def prepare_user_profile(user_id: int) -> tuple[str, str]:
     user = await User.get(user_id=user_id)
-    text = f'<b>{user.username}</b>\n' + \
+    text = f'<b>{user.full_name}</b>\n' + \
            f'<b>Age:</b> {user.age}\n' + \
            f'<b>Gender:</b> {await User.get_gender_display(user.gender)}\n\n' + \
            f'{user.description}\n' + \

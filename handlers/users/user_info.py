@@ -15,7 +15,7 @@ from handlers.users import utils
 
 
 user_info_keys = {'user_id', 'username', 'description', 'gender', 'interested_gender',
-                  'age', 'longitude', 'latitude', 'search_distance', 'photo'}
+                  'age', 'longitude', 'latitude', 'search_distance', 'photo', 'full_name'}
 
 
 async def user_dict_info_to_text(data: dict) -> str:
@@ -109,7 +109,7 @@ async def send_confirm_to_save(m: types.Message, state: FSMContext):
     user_dict_data_keys = set(data['user'].keys())
     difference = user_dict_data_keys ^ user_info_keys
     if difference:
-        text = 'Some data were not passed' + \
+        text = 'Some data were not passed\n' + \
                 '.'.join(difference)
         await m.answer(text)
         log.info(f'Difference: {difference}')
@@ -144,7 +144,8 @@ async def user_info_base_handler(m: types.Message, state: FSMContext):
                 'longitude': user.longitude,
                 'latitude': user.latitude,
                 'search_distance': user.search_distance,
-                'photo': user.photo
+                'photo': user.photo,
+                'full_name': user.full_name
             }
             data['creating'] = False
         await m.answer('Use menu to choose data to change', reply_markup=user_info_keyboard)
@@ -153,7 +154,8 @@ async def user_info_base_handler(m: types.Message, state: FSMContext):
         async with state.proxy() as data:
             data['user'] = {
                 'user_id': m.from_user.id,
-                'username': m.from_user.full_name
+                'full_name': m.from_user.full_name,
+                'username': m.from_user.username
             }
             data['creating'] = True
         await m.answer(text)
@@ -274,7 +276,8 @@ async def save_user(call: types.CallbackQuery, callback_data: dict, state: FSMCo
         async with state.proxy() as data:
             user_data = data['user']
             user, created = await User.get_or_create(user_id=call.from_user.id,
-                                                     defaults={'username': user_data['username'],
+                                                     defaults={'full_name': user_data['full_name'],
+                                                               'username': user_data['username'],
                                                                'description': user_data['description'],
                                                                'gender': user_data['gender'],
                                                                'interested_gender': user_data['interested_gender'],

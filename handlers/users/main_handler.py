@@ -1,6 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.builtin import Text
+from aiogram.utils import exceptions
 from loader import dp, log
 
 from keyboards.inline.user_info_keyboard import confirm_keyboard, item_cb, get_user_profile_keyboard, like_dislike_cb
@@ -16,6 +17,14 @@ async def get_user_info(user_id: int, index: int) -> tuple[str, str, types.Inlin
     user_info, photo_id = await prepare_user_profile(user_id)
     keyboard = await get_user_profile_keyboard(user_id, index)
     return user_info, photo_id, keyboard
+
+
+async def pair_likes(user: User, me: User, call: types.CallbackQuery):
+    if user in await me.likers.all():
+        try:
+            pass
+        except exceptions.ChatNotFound:
+            log.info(f'{user.user_id} char was not found')
 
 
 @dp.message_handler(Text(equals=['Remove dislikes']))
@@ -93,6 +102,8 @@ async def like_dislike(call: types.CallbackQuery, callback_data: dict, state: FS
             await user.save()
             await call.answer('Liked')
             index = index + 1 if index < len(users_list)-1 else index - 1
+
+            await pair_likes(user, me, call)
         else:
             if me in await user.likers.all():
                 await user.likers.remove(me)

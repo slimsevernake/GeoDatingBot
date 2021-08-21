@@ -1,12 +1,12 @@
 from tortoise import Model, fields
-from tortoise.query_utils import Q
 
 from geopy import distance
 
 
 class User(Model):
     user_id = fields.IntField()
-    username = fields.CharField(max_length=100)
+    full_name = fields.CharField(max_length=100)
+    username = fields.CharField(max_length=255)
     description = fields.TextField()
     gender = fields.BooleanField()  # True - main. False - woman
     interested_gender = fields.BooleanField()
