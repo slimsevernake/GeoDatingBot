@@ -9,7 +9,7 @@ from keyboards.default.defaults import do_registration
 from keyboards.dispatcher import dispatcher
 from states.state_groups import CustomUser
 
-from db.models import User
+from db.models import User, Rate
 
 import random
 
@@ -38,6 +38,7 @@ async def add_custom_user(m: types.Message, state: FSMContext):
     keyboard, prev_level = await dispatcher('LEVEL_2_PROFILES')
     text = 'Because testers live in different cities, it can be hard to test distance calculating.\n' + \
            'So you can create test user with custom coordinates for testing.\n' + \
+           'This user will liked you\n' + \
            'Coordinates you can get from Google Maps for your city or any place you want\n\n' + \
            'Input coordinates in format - longitude:latitude'
     await m.answer(text, reply_markup=keyboard)
@@ -54,16 +55,19 @@ async def set_custom_user(m: types.Message, state: FSMContext):
     try:
         long, lat = float(long), float(lat)
         rand_id = random.randint(0, 10000)
-        await User.create(user_id=rand_id,
-                          full_name=f'Test {rand_id}',
-                          username=f'Test username {rand_id}',
-                          description=f'Test desc {rand_id}',
-                          gender=True,
-                          interested_gender=False,
-                          age=30,
-                          longitude=long, latitude=lat,
-                          search_distance=100000,
-                          photo='AgACAgIAAxkBAAINLWEhJltMgCWIPVTZ_27n9ZgnVSLSAAICszEbpycISbTVoFhMhtIaAQADAgADeQADIAQ')
+        photo_id = 'AgACAgIAAxkBAAINLWEhJltMgCWIPVTZ_27n9ZgnVSLSAAICszEbpycISbTVoFhMhtIaAQADAgADeQADIAQ'
+        user = await User.create(user_id=rand_id,
+                                 full_name=f'Test {rand_id}',
+                                 username=f'Test username {rand_id}',
+                                 description=f'Test desc {rand_id}',
+                                 gender=True,
+                                 interested_gender=False,
+                                 age=30,
+                                 longitude=long, latitude=lat,
+                                 search_distance=100000,
+                                 photo=photo_id)
+        me = await User.get(user_id=m.from_user.id)
+        await Rate.create(rate_owner=user, target=me, type=True)
         await m.answer('Saved')
         data = await state.get_data()
         await state.finish()
