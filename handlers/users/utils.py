@@ -86,11 +86,14 @@ async def send_message(user_id: int, text: str, bot) -> bool:
     return False
 
 
-async def prepare_user_profile(user_id: int) -> tuple[str, str]:
+async def prepare_user_profile(user_id: int, me: int) -> tuple[str, str]:
     user = await User.get(user_id=user_id)
+    me = await User.get(user_id=me)
     text = f'<b>{user.full_name}</b>\n' + \
            f'<b>Age:</b> {user.age}\n' + \
            f'<b>Gender:</b> {await User.get_gender_display(user.gender)}\n\n' + \
            f'{user.description}\n' + \
-           f'<b>Interesting: </b> {await User.get_gender_display(user.interested_gender)}'
+           f'<b>Interesting: </b> {await User.get_gender_display(user.interested_gender)}\n\n'
+    if me in await user.likers.all():
+        text += '<b>Liked</b>'
     return text, user.photo

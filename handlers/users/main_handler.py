@@ -13,8 +13,8 @@ from handlers.users.utils import prepare_user_profile
 from states.state_groups import ListProfiles
 
 
-async def get_user_info(user_id: int, index: int) -> tuple[str, str, types.InlineKeyboardMarkup]:
-    user_info, photo_id = await prepare_user_profile(user_id)
+async def get_user_info(user_id: int, index: int, me: int) -> tuple[str, str, types.InlineKeyboardMarkup]:
+    user_info, photo_id = await prepare_user_profile(user_id, me)
     keyboard = await get_user_profile_keyboard(user_id, index)
     return user_info, photo_id, keyboard
 
@@ -63,7 +63,7 @@ async def confirm_list_profiles(call: types.CallbackQuery, callback_data: dict, 
         users_list = data['users_list']
         menu_keyboard, prev_level = await dispatcher('LEVEL_2_PROFILES')
         data['prev_level'] = prev_level
-        user_info, photo_id, keyboard = await get_user_info(users_list[0], 0)
+        user_info, photo_id, keyboard = await get_user_info(users_list[0], 0, call.from_user.id)
         await call.bot.send_message(chat_id=call.from_user.id, text='Profiles: ', reply_markup=menu_keyboard)
         await call.bot.send_photo(photo=photo_id, caption=user_info, reply_markup=keyboard,
                                   chat_id=call.from_user.id)
@@ -79,7 +79,7 @@ async def get_profiles_page(call: types.CallbackQuery, callback_data: dict, stat
         if index < 0 or index > len(users_list)-1:
             await call.answer('There is no page')
             return
-        user_info, photo_id, keyboard = await get_user_info(users_list[index], index)
+        user_info, photo_id, keyboard = await get_user_info(users_list[index], index, call.from_user.id)
         await call.message.edit_media(
             types.input_media.InputMediaPhoto(media=photo_id, caption=user_info),
             reply_markup=keyboard)
@@ -113,7 +113,7 @@ async def like_dislike(call: types.CallbackQuery, callback_data: dict, state: FS
             await user.save()
             await call.answer('Disliked')
             data['users_list'].pop(index)
-        user_info, photo_id, keyboard = await get_user_info(users_list[index], index)
+        user_info, photo_id, keyboard = await get_user_info(users_list[index], index, call.from_user.id)
         await call.message.edit_media(
             types.input_media.InputMediaPhoto(media=photo_id, caption=user_info),
             reply_markup=keyboard)
