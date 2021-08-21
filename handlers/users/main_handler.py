@@ -41,6 +41,19 @@ async def remove_dislikes(m: types.Message):
     await m.answer(f'{len(disliked)} dislikes was removed')
 
 
+@dp.message_handler(Text(equals=['Display liked users']))
+async def display_liked_users(m: types.Message, state: FSMContext):
+    user = await User.get(user_id=m.from_user.id)
+    liked_users = await user.get_liked_users()
+    if not liked_users:
+        await m.answer('You havent liked anyone yet')
+        return
+    await m.answer(f'Founded {len(liked_users)} users.\nDo you want to see their profiles?',
+                   reply_markup=confirm_keyboard)
+    await ListProfiles.confirm.set()
+    await state.update_data(users_list=liked_users)
+
+
 @dp.message_handler(Text(equals=['Display users']))
 async def display_matched_users(m: types.Message, state: FSMContext):
     user = await User.get(user_id=m.from_user.id)
