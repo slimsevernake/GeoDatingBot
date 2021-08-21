@@ -7,6 +7,11 @@ from loader import dp, log
 
 from keyboards.default.defaults import do_registration
 from keyboards.dispatcher import dispatcher
+from states.state_groups import CustomUser
+
+from db.models import User
+
+import random
 
 
 @dp.message_handler(Text(equals=['Back']), state='*')
@@ -26,3 +31,43 @@ async def bot_start(m: types.Message, state: FSMContext):
                    reply_markup=do_registration)
     log.info(f'User: {m.from_user.id} comes')
     await state.finish()
+
+
+@dp.message_handler(Text(equals=['Add custom user(For test only)']))
+async def add_custom_user(m: types.Message, state: FSMContext):
+    keyboard, prev_level = await dispatcher('LEVEL_2_PROFILES')
+    text = 'Because testers live in different cities, it can be hard to test distance calculating.\n' + \
+           'So you can create test user with custom coordinates for testing.\n' + \
+           'Coordinates you can get from Google Maps for your city or any place you want\n\n' + \
+           'Input coordinates in format - longitude:latitude'
+    await m.answer(text, reply_markup=keyboard)
+    await CustomUser.coord.set()
+    await state.update_data(prev_level=prev_level)
+
+
+@dp.message_handler(state=CustomUser.coord)
+async def set_custom_user(m: types.Message, state: FSMContext):
+    if ':' not in m.text:
+        await m.answer('Wrong format')
+        return
+    lat, long = m.text.split(':')
+    try:
+        long, lat = float(long), float(lat)
+        rand_id = random.randint(0, 10000)
+        await User.create(user_id=rand_id,
+                          full_name=f'Test {rand_id}',
+                          username=f'Test username {rand_id}',
+                          description=f'Test desc {rand_id}',
+                          gender=True,
+                          interested_gender=False,
+                          age=30,
+                          longitude=long, latitude=lat,
+                          search_distance=100000,
+                          photo='AgACAgIAAxkBAAINLWEhJltMgCWIPVTZ_27n9ZgnVSLSAAICszEbpycISbTVoFhMhtIaAQADAgADeQADIAQ')
+        await m.answer('Saved')
+        data = await state.get_data()
+        await state.finish()
+        await state.update_data(**data)
+    except ValueError:
+        await m.answer('Wrong format')
+        return

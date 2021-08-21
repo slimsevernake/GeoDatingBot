@@ -7,6 +7,8 @@ level_1 = ReplyKeyboardMarkup(resize_keyboard=True).add(
 ).add(
     KeyboardButton('Edit info'),
     KeyboardButton('Remove dislikes')
+).add(
+    KeyboardButton('Add custom user(For test only)')
 )
 
 

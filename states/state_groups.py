@@ -20,3 +20,7 @@ class Mailing(StatesGroup):
 class ListProfiles(StatesGroup):
     confirm = State()
     main = State()
+
+
+class CustomUser(StatesGroup):
+    coord = State()
