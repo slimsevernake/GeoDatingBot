@@ -60,9 +60,9 @@ async def get_profiles_page(call: types.CallbackQuery, callback_data: dict, stat
             await call.answer('There is no page')
             return
         user_info, photo_id, keyboard = await get_user_info(users_list[index], index)
-        await call.message.delete()
-        await call.bot.send_photo(photo=photo_id, caption=user_info, reply_markup=keyboard,
-                                  chat_id=call.from_user.id)
+        await call.message.edit_media(
+            types.input_media.InputMediaPhoto(media=photo_id, caption=user_info),
+            reply_markup=keyboard)
         await call.answer()
 
 
@@ -90,6 +90,6 @@ async def like_dislike(call: types.CallbackQuery, callback_data: dict, state: FS
             data['users_list'].pop(index)
             index = index + 1 if index < len(users_list)-1 else index - 1
         user_info, photo_id, keyboard = await get_user_info(users_list[index], index)
-        await call.message.delete()
-        await call.bot.send_photo(photo=photo_id, caption=user_info, reply_markup=keyboard,
-                                  chat_id=call.from_user.id)
+        await call.message.edit_media(
+            types.input_media.InputMediaPhoto(media=photo_id, caption=user_info),
+            reply_markup=keyboard)
