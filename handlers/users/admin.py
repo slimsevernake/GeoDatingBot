@@ -55,3 +55,11 @@ async def statistic_menu(m: types.Message):
     for key, value in statistic_data.items():
         text += f'<b>{key}</b>: {value or 0}\n'
     await m.answer(text)
+
+
+@dp.message_handler(Text(equals=['Logs']), is_admin=True)
+async def get_logs(m: types.Message):
+    log.info(f'User: {m.from_user.id} - gets logs')
+    with open('app.log', 'rb') as file:
+        await m.bot.send_document(chat_id=m.from_user.id, document=file,
+                                  caption='Log file')

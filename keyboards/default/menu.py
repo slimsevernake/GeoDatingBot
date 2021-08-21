@@ -16,6 +16,8 @@ level_2_admin = ReplyKeyboardMarkup(resize_keyboard=True).add(
     KeyboardButton('Broadcast mailing'),
     KeyboardButton('Statistic')
 ).add(
+    KeyboardButton('Logs')
+).add(
     KeyboardButton('Back')
 )
 
