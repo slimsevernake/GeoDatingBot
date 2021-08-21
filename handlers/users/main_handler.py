@@ -14,8 +14,8 @@ from states.state_groups import ListProfiles
 
 
 async def get_user_info(user_id: int, index: int, me: int) -> tuple[str, str, types.InlineKeyboardMarkup]:
-    user_info, photo_id = await prepare_user_profile(user_id, me)
-    keyboard = await get_user_profile_keyboard(user_id, index)
+    user_info, photo_id, liked = await prepare_user_profile(user_id, me)
+    keyboard = await get_user_profile_keyboard(user_id, index, liked)
     return user_info, photo_id, keyboard
 
 
@@ -108,11 +108,14 @@ async def like_dislike(call: types.CallbackQuery, callback_data: dict, state: FS
     async with state.proxy() as data:
         users_list = data['users_list']
         if action_type:
-            await Rate.create(rate_owner=me, target=user, type=True)
-            await call.answer('Liked')
-            index = index + 1 if index < len(users_list)-1 else index - 1
-
-            await pair_likes(user, me, call)
+            instance, created = await Rate.get_or_create(rate_owner=me, target=user, type=True)
+            if created:
+                await call.answer('Liked')
+                index = index + 1 if index < len(users_list)-1 else index - 1
+                await pair_likes(user, me, call)
+            else:
+                await instance.delete()
+                await call.answer('Like removed')
         else:
             rate = await Rate.filter(rate_owner=me, target=user, type=True).first()
             if rate:

@@ -21,12 +21,12 @@ confirm_keyboard = InlineKeyboardMarkup().add(
 )
 
 
-async def get_user_profile_keyboard(user_id: int, index: int) -> InlineKeyboardMarkup:
+async def get_user_profile_keyboard(user_id: int, index: int, liked: bool) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup().add(
-        InlineKeyboardButton('Like', callback_data=like_dislike_cb.new(action='like_dislike',
-                                                                       user_id=user_id,
-                                                                       type=1,
-                                                                       index=index)),
+        InlineKeyboardButton('Remove like' if liked else 'Like', callback_data=like_dislike_cb.new(action='like_dislike',
+                                                                                                   user_id=user_id,
+                                                                                                   type=1,
+                                                                                                   index=index)),
         InlineKeyboardButton('Dislike', callback_data=like_dislike_cb.new(action='like_dislike',
                                                                           user_id=user_id,
                                                                           type=0,

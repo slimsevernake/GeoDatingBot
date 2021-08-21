@@ -88,7 +88,7 @@ async def send_message(user_id: int, text: str, bot) -> bool:
     return False
 
 
-async def prepare_user_profile(user_id: int, me: int) -> tuple[str, str]:
+async def prepare_user_profile(user_id: int, me: int) -> tuple[str, str, bool]:
     user = await User.get(user_id=user_id)
     me = await User.get(user_id=me)
     my_coord = (me.longitude, me.latitude)
@@ -102,4 +102,5 @@ async def prepare_user_profile(user_id: int, me: int) -> tuple[str, str]:
            f'<b>Distance: {coord_distance}</b> meters away from you\n\n'
     if await Rate.filter(rate_owner=me, target=user).exists():
         text += '<b>Liked</b>'
-    return text, user.photo
+        return text, user.photo, True
+    return text, user.photo, False
