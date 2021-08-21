@@ -83,6 +83,9 @@ async def like_dislike(call: types.CallbackQuery, callback_data: dict, state: FS
             await call.answer('Liked')
             index = index + 1 if index < len(users_list)-1 else index - 1
         else:
+            if me in user.likers:
+                await user.likers.remove(me)
+                user.likes -= 1
             await user.dislikers.add(me)
             user.dislikes += 1
             await user.save()
