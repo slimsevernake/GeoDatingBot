@@ -20,10 +20,11 @@ async def get_user_info(user_id: int, index: int, me: int) -> tuple[str, str, ty
 
 
 async def pair_likes(user: User, me: User, call: types.CallbackQuery):
-    if Rate.filter(rate_owner=user, target=me, type=True).exists():
+    if await Rate.filter(rate_owner=user, target=me, type=True).exists():
         try:
             await call.bot.send_message(chat_id=me.user_id,
-                                        text=f'This user ({user.full_name}) is also liked you: @{user.username}')
+                                        text=f'This user ({user.full_name}) is also liked you.\n' +
+                                             f'See user`s profile: @{user.username}')
             await call.bot.send_message(chat_id=user.user_id,
                                         text=f'You have been liked by: @{me.username} too. ({me.full_name})')
         except exceptions.ChatNotFound:
