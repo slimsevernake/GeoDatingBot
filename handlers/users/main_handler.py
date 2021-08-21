@@ -22,9 +22,13 @@ async def get_user_info(user_id: int, index: int, me: int) -> tuple[str, str, ty
 async def pair_likes(user: User, me: User, call: types.CallbackQuery):
     if user in await me.likers.all():
         try:
-            pass
+            await call.bot.send_message(chat_id=me.user_id,
+                                        text=f'This user ({user.full_name}) is also liked you: @{user.username}')
+            await call.bot.send_message(chat_id=user.user_id,
+                                        text=f'You have been liked by: @{me.username} too. ({me.full_name})')
         except exceptions.ChatNotFound:
             log.info(f'{user.user_id} char was not found')
+            await call.message.answer('You liked test user. So here may be a username of real user')
 
 
 @dp.message_handler(Text(equals=['Remove dislikes']))
