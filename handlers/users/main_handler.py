@@ -18,6 +18,17 @@ async def get_user_info(user_id: int, index: int) -> tuple[str, str, types.Inlin
     return user_info, photo_id, keyboard
 
 
+@dp.message_handler(Text(equals=['Remove dislikes']))
+async def remove_dislikes(m: types.Message):
+    user = await User.get(user_id=m.from_user.id)
+    disliked = await User.filter(dislikers=user)
+    for u in disliked:
+        await u.dislikers.remove(user)
+        u.dislikes -= 1
+        await u.save()
+    await m.answer(f'{len(disliked)} dislikes was removed')
+
+
 @dp.message_handler(Text(equals=['Display users']))
 async def display_matched_users(m: types.Message, state: FSMContext):
     user = await User.get(user_id=m.from_user.id)
@@ -83,7 +94,7 @@ async def like_dislike(call: types.CallbackQuery, callback_data: dict, state: FS
             await call.answer('Liked')
             index = index + 1 if index < len(users_list)-1 else index - 1
         else:
-            if me in user.likers:
+            if me in await user.likers.all():
                 await user.likers.remove(me)
                 user.likes -= 1
             await user.dislikers.add(me)
@@ -91,7 +102,6 @@ async def like_dislike(call: types.CallbackQuery, callback_data: dict, state: FS
             await user.save()
             await call.answer('Disliked')
             data['users_list'].pop(index)
-            index = index + 1 if index < len(users_list)-1 else index - 1
         user_info, photo_id, keyboard = await get_user_info(users_list[index], index)
         await call.message.edit_media(
             types.input_media.InputMediaPhoto(media=photo_id, caption=user_info),
