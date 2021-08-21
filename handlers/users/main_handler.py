@@ -46,7 +46,9 @@ async def display_matched_users(m: types.Message, state: FSMContext):
     user = await User.get(user_id=m.from_user.id)
     matched_users = await user.find_matched_users()
     if not matched_users:
-        await m.answer('There are no any users in this area. ')
+        nearest = round(await user.find_nearest(), 2)
+        await m.answer('There are no any users in this area.\n' +
+                       f'Nearest person is <b>{nearest}</b> meters away from you')
         return
     log.info(f'Founded: {len(matched_users)} for {m.from_user.id}')
     await m.answer(f'Founded {len(matched_users)} users.\nDo you want to see their profiles?',

@@ -252,11 +252,11 @@ async def profile_location(m: types.Message, state: FSMContext):
 @dp.message_handler(state=UserInfoState.search_distance)
 async def search_distance(m: types.Message, state: FSMContext):
     try:
-        radius = int(m.text)
+        radius = int(m.text.replace(' ', ''))
         if radius < 30:
             await m.answer('Radius is too small')
-        elif radius >= 10000:
-            await m.answer('Radius is too big')
+        elif radius >= 6371000:
+            await m.answer('This radius is biggest then Earth! Our planet radius is 6371 km.')
         else:
             async with state.proxy() as data:
                 data['user']['search_distance'] = radius

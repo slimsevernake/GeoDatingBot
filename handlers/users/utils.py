@@ -6,6 +6,8 @@ from aiogram.utils import exceptions
 from keyboards.default.defaults import geo_keyboard
 from loader import log
 
+from geopy import distance
+
 
 async def get_user_age(data: dict) -> str:
     if data.get('age'):
@@ -89,11 +91,15 @@ async def send_message(user_id: int, text: str, bot) -> bool:
 async def prepare_user_profile(user_id: int, me: int) -> tuple[str, str]:
     user = await User.get(user_id=user_id)
     me = await User.get(user_id=me)
+    my_coord = (me.longitude, me.latitude)
+    user_coord = (user.longitude, user.latitude)
+    coord_distance = round(distance.distance(my_coord, user_coord).meters, 2)
     text = f'<b>{user.full_name}</b>\n' + \
            f'<b>Age:</b> {user.age}\n' + \
            f'<b>Gender:</b> {await User.get_gender_display(user.gender)}\n\n' + \
            f'{user.description}\n' + \
-           f'<b>Interesting: </b> {await User.get_gender_display(user.interested_gender)}\n\n'
+           f'<b>Interesting: </b> {await User.get_gender_display(user.interested_gender)}\n' + \
+           f'<b>Distance: {coord_distance}</b> meters away from you\n\n'
     if await Rate.filter(rate_owner=me, target=user).exists():
         text += '<b>Liked</b>'
     return text, user.photo

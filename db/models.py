@@ -38,6 +38,24 @@ class User(Model):
                 users.append(user.user_id)
         return users
 
+    async def find_nearest(self) -> int:
+        nearest_distance = 0
+        my_coord = (self.longitude, self.latitude)
+        queryset = User.filter(pk__not=self.pk)
+        rate_queryset = await Rate.filter(rate_owner=self, type=False)
+        if rate_queryset:
+            queryset = queryset.filter(as_target__not_in=rate_queryset)
+        for user in await queryset:
+            user_coord = (user.longitude, user.latitude)
+            coord_distance = distance.distance(my_coord, user_coord).meters
+            if nearest_distance == 0:
+                nearest_distance = coord_distance
+            elif coord_distance < nearest_distance:
+                nearest_distance = coord_distance
+            else:
+                continue
+        return nearest_distance
+
     @staticmethod
     async def get_gender_display(gender_bool: bool) -> str:
         return 'Man' if gender_bool else 'Woman'
