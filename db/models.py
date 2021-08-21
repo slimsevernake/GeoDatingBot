@@ -1,4 +1,5 @@
 from tortoise import Model, fields
+from tortoise.query_utils import Q
 
 from geopy import distance
 
@@ -31,7 +32,7 @@ class User(Model):
         """
         users = []
         my_coord = (self.longitude, self.latitude)
-        for user in await User.all():
+        for user in await User.filter(dislikers__not=self.pk, pk__not=self.pk):
             user_coord = (user.longitude, user.latitude)
             coord_distance = distance.distance(my_coord, user_coord).meters
             if coord_distance <= self.search_distance:
