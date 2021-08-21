@@ -16,13 +16,8 @@ class User(Model):
     search_distance = fields.IntField()
     photo = fields.CharField(max_length=255)
 
-    likes = fields.IntField(default=0)
-    likers = fields.ManyToManyField('models.User', related_name='liked')
-
-    dislikes = fields.IntField(default=0)
-    dislikers = fields.ManyToManyField('models.User', related_name='disliked')
-
-    matched = fields.IntField(default=0)
+    rates: fields.ForeignKeyRelation['Rate']
+    as_target: fields.ForeignKeyRelation['Rate']
 
     async def find_matched_users(self) -> list[int]:
         """
@@ -32,7 +27,11 @@ class User(Model):
         """
         users = []
         my_coord = (self.longitude, self.latitude)
-        for user in await User.filter(dislikers__not=self.pk, pk__not=self.pk):
+        queryset = User.filter(pk__not=self.pk)
+        rate_queryset = await Rate.filter(rate_owner=self, type=False)
+        if rate_queryset:
+            queryset = queryset.filter(as_target__not_in=rate_queryset)
+        for user in await queryset:
             user_coord = (user.longitude, user.latitude)
             coord_distance = distance.distance(my_coord, user_coord).meters
             if coord_distance <= self.search_distance:
@@ -42,3 +41,9 @@ class User(Model):
     @staticmethod
     async def get_gender_display(gender_bool: bool) -> str:
         return 'Man' if gender_bool else 'Woman'
+
+
+class Rate(Model):
+    rate_owner = fields.ForeignKeyField('models.User', related_name='rates', on_delete=fields.CASCADE)
+    target = fields.ForeignKeyField('models.User', related_name='as_target', on_delete=fields.CASCADE)
+    type = fields.BooleanField()  # True is like. False is dislike

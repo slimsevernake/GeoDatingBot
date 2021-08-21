@@ -1,5 +1,5 @@
 import asyncio
-from db.models import User
+from db.models import User, Rate
 
 from aiogram.types import Message
 from aiogram.utils import exceptions
@@ -94,6 +94,6 @@ async def prepare_user_profile(user_id: int, me: int) -> tuple[str, str]:
            f'<b>Gender:</b> {await User.get_gender_display(user.gender)}\n\n' + \
            f'{user.description}\n' + \
            f'<b>Interesting: </b> {await User.get_gender_display(user.interested_gender)}\n\n'
-    if me in await user.likers.all():
+    if await Rate.filter(rate_owner=me, target=user).exists():
         text += '<b>Liked</b>'
     return text, user.photo

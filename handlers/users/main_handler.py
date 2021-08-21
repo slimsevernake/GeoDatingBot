@@ -7,7 +7,7 @@ from loader import dp, log
 from keyboards.inline.user_info_keyboard import confirm_keyboard, item_cb, get_user_profile_keyboard, like_dislike_cb
 from keyboards.dispatcher import dispatcher
 
-from db.models import User
+from db.models import User, Rate
 from handlers.users.utils import prepare_user_profile
 
 from states.state_groups import ListProfiles
@@ -20,7 +20,7 @@ async def get_user_info(user_id: int, index: int, me: int) -> tuple[str, str, ty
 
 
 async def pair_likes(user: User, me: User, call: types.CallbackQuery):
-    if user in await me.likers.all():
+    if Rate.filter(rate_owner=user, target=me, type=True).exists():
         try:
             await call.bot.send_message(chat_id=me.user_id,
                                         text=f'This user ({user.full_name}) is also liked you: @{user.username}')
@@ -34,11 +34,9 @@ async def pair_likes(user: User, me: User, call: types.CallbackQuery):
 @dp.message_handler(Text(equals=['Remove dislikes']))
 async def remove_dislikes(m: types.Message):
     user = await User.get(user_id=m.from_user.id)
-    disliked = await User.filter(dislikers=user)
+    disliked = await Rate.filter(rate_owner=user, type=False)
     for u in disliked:
-        await u.dislikers.remove(user)
-        u.dislikes -= 1
-        await u.save()
+        await u.delete()
     await m.answer(f'{len(disliked)} dislikes was removed')
 
 
@@ -80,6 +78,9 @@ async def get_profiles_page(call: types.CallbackQuery, callback_data: dict, stat
     index = int(callback_data.get('value', 0))
     async with state.proxy() as data:
         users_list = data['users_list']
+        if not users_list:
+            await call.message.delete()
+            await call.bot.send_message(chat_id=call.from_user.id, text='There are not users')
         if index < 0 or index > len(users_list)-1:
             await call.answer('There is no page')
             return
@@ -101,22 +102,21 @@ async def like_dislike(call: types.CallbackQuery, callback_data: dict, state: FS
     async with state.proxy() as data:
         users_list = data['users_list']
         if action_type:
-            await user.likers.add(me)
-            user.likes += 1
-            await user.save()
+            await Rate.create(rate_owner=me, target=user, type=True)
             await call.answer('Liked')
             index = index + 1 if index < len(users_list)-1 else index - 1
 
             await pair_likes(user, me, call)
         else:
-            if me in await user.likers.all():
-                await user.likers.remove(me)
-                user.likes -= 1
-            await user.dislikers.add(me)
-            user.dislikes += 1
-            await user.save()
+            rate = await Rate.filter(rate_owner=me, target=user, type=True).first()
+            if rate:
+                await rate.delete()
+            await Rate.create(rate_owner=me, target=user, type=False)
             await call.answer('Disliked')
             data['users_list'].pop(index)
+        if not users_list:
+            await call.message.delete()
+            await call.bot.send_message(chat_id=call.from_user.id, text='There are no users more')
         user_info, photo_id, keyboard = await get_user_info(users_list[index], index, call.from_user.id)
         await call.message.edit_media(
             types.input_media.InputMediaPhoto(media=photo_id, caption=user_info),
