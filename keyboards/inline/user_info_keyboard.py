@@ -1,6 +1,6 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from keyboards.callbacks import item_cb
+from keyboards.callbacks import item_cb, like_dislike_cb
 
 gender_keyboard = InlineKeyboardMarkup().add(
     InlineKeyboardButton('Man', callback_data=item_cb.new(action='choose_gender',
@@ -19,3 +19,23 @@ confirm_keyboard = InlineKeyboardMarkup().add(
                                                              value=0,
                                                              second_value=False))
 )
+
+
+async def get_user_profile_keyboard(user_id: int, index: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup().add(
+        InlineKeyboardButton('Like', callback_data=like_dislike_cb.new(action='like_dislike',
+                                                                       user_id=user_id,
+                                                                       type=1,
+                                                                       index=index)),
+        InlineKeyboardButton('Dislike', callback_data=like_dislike_cb.new(action='like_dislike',
+                                                                          user_id=user_id,
+                                                                          type=0,
+                                                                          index=index))
+    ).add(
+        InlineKeyboardButton('Prev', callback_data=item_cb.new(action='get_page',
+                                                               value=index-1,
+                                                               second_value=False)),
+        InlineKeyboardButton('Next', callback_data=item_cb.new(action='get_page',
+                                                               value=index+1,
+                                                               second_value=False))
+    )

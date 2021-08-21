@@ -9,9 +9,10 @@ from keyboards.default.defaults import do_registration
 from keyboards.dispatcher import dispatcher
 
 
-@dp.message_handler(Text(equals=['Back']))
+@dp.message_handler(Text(equals=['Back']), state='*')
 async def back(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
+        await state.finish()
         keyboard, prev_level = await dispatcher(data.get('prev_level', 'LEVEL_1'))
         message_text = 'Back to previous level'
         await message.answer(message_text, reply_markup=keyboard)

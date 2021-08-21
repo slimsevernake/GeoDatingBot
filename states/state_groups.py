@@ -15,3 +15,8 @@ class UserInfoState(StatesGroup):
 
 class Mailing(StatesGroup):
     text = State()
+
+
+class ListProfiles(StatesGroup):
+    confirm = State()
+    main = State()

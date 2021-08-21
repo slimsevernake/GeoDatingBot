@@ -84,3 +84,13 @@ async def send_message(user_id: int, text: str, bot) -> bool:
         log.info(f"Target [ID:{user_id}]: success")
         return True
     return False
+
+
+async def prepare_user_profile(user_id: int) -> tuple[str, str]:
+    user = await User.get(user_id=user_id)
+    text = f'<b>{user.username}</b>\n' + \
+           f'<b>Age:</b> {user.age}\n' + \
+           f'<b>Gender:</b> {await User.get_gender_display(user.gender)}\n\n' + \
+           f'{user.description}\n' + \
+           f'<b>Interesting: </b> {await User.get_gender_display(user.interested_gender)}'
+    return text, user.photo

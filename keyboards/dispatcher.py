@@ -8,7 +8,8 @@ from keyboards.default import menu
 menu_storage = {
     'LEVEL_1': menu.level_1,
     'LEVEL_1:LEVEL_2': {
-        'LEVEL_2_ADMIN': menu.level_2_admin
+        'LEVEL_2_ADMIN': menu.level_2_admin,
+        'LEVEL_2_PROFILES': menu.level_2_profiles
     }
 }
 
