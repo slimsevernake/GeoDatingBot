@@ -24,11 +24,15 @@ else:
 
 
 async def add_to_admin_list(user_id: str):
+    """
+        ADMINS data stores in memory, so append it.
+        Also, write new ADMINS data to config.ini file for potential bot reboot
+    """
     ADMINS.append(user_id)
     config['DEFAULT']['ADMINS'] = ','.join(ADMINS)
     with open('config.ini', 'w') as file:
         config.write(file)
 
 
-async def check_is_user_is_admin(user_id: str) -> bool:
+async def check_if_user_is_admin(user_id: str) -> bool:
     return str(user_id) in ADMINS

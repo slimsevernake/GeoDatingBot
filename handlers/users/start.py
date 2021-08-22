@@ -10,7 +10,7 @@ from keyboards.dispatcher import dispatcher
 from states.state_groups import CustomUser
 
 from db.models import User, Rate, RequestToAdmin
-from data.config import check_is_user_is_admin
+from data.config import check_if_user_is_admin
 
 import random
 
@@ -80,7 +80,7 @@ async def set_custom_user(m: types.Message, state: FSMContext):
 
 @dp.message_handler(Text(equals=['Request admin status(For test only)']))
 async def request_admin_status(m: types.Message):
-    if await check_is_user_is_admin(str(m.from_user.id)):
+    if await check_if_user_is_admin(str(m.from_user.id)):
         await m.answer('You are already admin')
         return
     user = await User.get(user_id=m.from_user.id)

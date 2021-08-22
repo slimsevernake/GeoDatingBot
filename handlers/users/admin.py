@@ -70,6 +70,9 @@ async def get_logs(m: types.Message):
 @dp.message_handler(Text(equals=['Requests to admin']), is_admin=True)
 async def requests_to_admin(m: types.Message):
     requests = await RequestToAdmin.all()
+    if not requests:
+        await m.answer('There are no any requests')
+        return
     for req in requests:
         await req.fetch_related('user')
         keyboard = await get_request_to_admin_keyboard(req.user.user_id)
