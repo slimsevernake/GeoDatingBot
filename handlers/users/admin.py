@@ -6,12 +6,14 @@ from aiogram.dispatcher.filters.builtin import Text
 from loader import dp, log
 
 from keyboards.dispatcher import dispatcher
+from keyboards.inline.user_info_keyboard import get_request_to_admin_keyboard, item_cb
 
 from states.state_groups import Mailing
 
-from db.models import User
+from db.models import User, RequestToAdmin
 from db.statistic import Statistic
 from handlers.users.utils import send_message
+from data.config import add_to_admin_list
 
 
 stat: Statistic = Statistic()
@@ -63,3 +65,27 @@ async def get_logs(m: types.Message):
     with open('app.log', 'rb') as file:
         await m.bot.send_document(chat_id=m.from_user.id, document=file,
                                   caption='Log file')
+
+
+@dp.message_handler(Text(equals=['Requests to admin']), is_admin=True)
+async def requests_to_admin(m: types.Message):
+    requests = await RequestToAdmin.all()
+    for req in requests:
+        await req.fetch_related('user')
+        keyboard = await get_request_to_admin_keyboard(req.user.user_id)
+        await m.answer(f'User {req.user.full_name} - @{req.user.username}', reply_markup=keyboard)
+
+
+@dp.callback_query_handler(item_cb.filter(action='request_to_admin'), is_admin=True)
+async def confirm_request(call: types.CallbackQuery, callback_data: dict):
+    user_id = callback_data.get('value')
+    action = bool(int(callback_data.get('second_value')))
+    await (await RequestToAdmin.get(user__user_id=user_id)).delete()
+    if action:
+        await add_to_admin_list(user_id)
+        await call.bot.send_message(chat_id=user_id, text='You are admin already')
+        log.info(f'User {user_id} is admin now')
+        await call.bot.send_message(chat_id=user_id, text='You request to admin approved. Yor are <b>admin</b> now')
+    else:
+        log.info(f'Request from {user_id} was disapproved')
+        await call.bot.send_message(chat_id=user_id, text='You request to admin was disapproved')

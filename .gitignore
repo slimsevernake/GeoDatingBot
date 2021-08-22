@@ -133,3 +133,4 @@ migrations
 aerich.ini
 .prod.env
 .vscode/
+config.ini

@@ -9,7 +9,8 @@ from keyboards.default.defaults import do_registration
 from keyboards.dispatcher import dispatcher
 from states.state_groups import CustomUser
 
-from db.models import User, Rate
+from db.models import User, Rate, RequestToAdmin
+from data.config import check_is_user_is_admin
 
 import random
 
@@ -75,3 +76,16 @@ async def set_custom_user(m: types.Message, state: FSMContext):
     except ValueError:
         await m.answer('Wrong format')
         return
+
+
+@dp.message_handler(Text(equals=['Request admin status(For test only)']))
+async def request_admin_status(m: types.Message):
+    if await check_is_user_is_admin(str(m.from_user.id)):
+        await m.answer('You are already admin')
+        return
+    user = await User.get(user_id=m.from_user.id)
+    request, created = await RequestToAdmin.get_or_create(user=user)
+    if not created:
+        await m.answer('You already sent request. Wait for response')
+        return
+    await m.answer('Request has been created. Wait for response')

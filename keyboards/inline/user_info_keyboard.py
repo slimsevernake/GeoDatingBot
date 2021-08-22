@@ -39,3 +39,14 @@ async def get_user_profile_keyboard(user_id: int, index: int, liked: bool) -> In
                                                                value=index+1,
                                                                second_value=False))
     )
+
+
+async def get_request_to_admin_keyboard(user_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup().add(
+        InlineKeyboardButton('Approve', callback_data=item_cb.new(action='request_to_admin',
+                                                                  value=user_id,
+                                                                  second_value=1)),
+        InlineKeyboardButton('Disapprove', callback_data=item_cb.new(action='request_to_admin',
+                                                                     value=user_id,
+                                                                     second_value=0))
+    )

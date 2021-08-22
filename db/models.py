@@ -84,3 +84,9 @@ class Rate(Model):
     rate_owner = fields.ForeignKeyField('models.User', related_name='rates', on_delete=fields.CASCADE)
     target = fields.ForeignKeyField('models.User', related_name='as_target', on_delete=fields.CASCADE)
     type = fields.BooleanField()  # True is like. False is dislike
+
+
+class RequestToAdmin(Model):
+    user: fields.ForeignKeyRelation['User'] = fields.ForeignKeyField('models.User',
+                                                                     related_name='requests', on_delete=fields.CASCADE)
+    created = fields.DatetimeField(auto_now_add=True)
