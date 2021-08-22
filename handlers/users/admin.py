@@ -92,3 +92,4 @@ async def confirm_request(call: types.CallbackQuery, callback_data: dict):
     else:
         log.info(f'Request from {user_id} was disapproved')
         await call.bot.send_message(chat_id=user_id, text='You request to admin was disapproved')
+    await call.answer()
