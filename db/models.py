@@ -54,7 +54,8 @@ class User(Model):
         return users
 
     async def get_liked_users(self) -> list:
-        queryset = (await self._get_queryset_of_related_users()).filter(as_target__type=True)
+        queryset = (await self._get_queryset_of_related_users()).filter(as_target__type=True,
+                                                                        rates__rate_owner=self)
         users = []
         for user in await queryset:
             users.append(user.user_id)
